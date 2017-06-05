@@ -13,9 +13,9 @@ plink --bfile athgene_clean --merge-list merge_list --out merged_clean
 
 for BATCH in {1..11}
 do
-for IND in {1..48}
-do
-  RUN=$(((BATCH-1)*48 + IND))
-  printf "I$RUN\tAthGene\tAthGene\t0\t$BATCH\n" >> individuals.txt
+  for IND in {1..48}
+  do
+    RUN=$(((BATCH-1)*48 + IND))
+    printf "I$RUN\tAthGene\tAthGene\t0\t$BATCH\n" >> individuals.txt
+  done
 done
-

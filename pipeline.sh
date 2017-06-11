@@ -10,6 +10,7 @@ export MANIFEST=$DATA_FOLDER/Exome_24/InfiniumExome-24v1-1_A1.csv
 export STRAND=$DATA_FOLDER/Exome_24/InfiniumCoreExome-24v1-1_A-b37.strand
 export PROBLEM=$DATA_FOLDER/problematic_marker_ids
 
+python extract_rscodes_fitness.py $DATA_FOLDER && \
 bash tidy_data.sh && \
 Rscript read_snps.R $DATA_FOLDER && \
 bash query_1000genomes.sh && \

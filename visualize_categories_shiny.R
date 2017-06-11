@@ -1,13 +1,20 @@
-setwd("~/MEGA/AthGene/")
+#data.dir <- commandArgs(trailingOnly = T)[[1]]
+data.dir <- "~/MEGA/AthGene/data"
+setwd(data.dir)
 
 library("shiny")
-scores <- read.table(file = "data/scores_99.txt", header = T, stringsAsFactors = F)
-tidy_data <- read.table(file = "data/tidy_data_scores.txt",
+
+scores.fl <- paste(data.dir, "scores_99.txt", sep = "/")
+scores <- read.table(file = scores.fl, header = T, stringsAsFactors = F)
+tidy_scores.fl <- paste(data.dir, "tidy_data_scores.txt", sep = "/")
+tidy_data <- read.table(file = tidy_scores.fl,
                         header = T, sep = "\t", na.strings = "NA", fill = T, quote = "\"" ,
                         stringsAsFactors = F)
+snps_categories.fl <- paste(data.dir, "snps_categories.rds", sep = "/")
+snps_categories <- readRDS(file = snps_categories.fl)
 
-snps_categories <- readRDS(file = "data/snps_categories.rds")
-the_subset <- readRDS(file = "data/the_subset.rds")
+the_subset.fl <- paste(data.dir, "the_subset.rds", sep = "/")
+the_subset <- readRDS(file = the_subset.fl)
 categories <- names(snps_categories)
 category_selector <- 1:length(categories)
 names(category_selector) <- categories

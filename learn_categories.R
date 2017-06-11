@@ -1,11 +1,12 @@
-setwd("/home/antortjim/MEGA/AthGene/")
+data.dir  <- "~/MEGA/AthGene/data"
+#data.dir <- commandArgs(trailingOnly = T)[[1]]
+setwd(data.dir)
 library("readxl")
+library("plyr")
 library("dplyr")
-library("here")
 
-excel_file <- here("data", "category.xlsx")
-
-data <- read_xlsx(path = "data/category.xlsx")
+excel.fl <- paste(data.dir, "category.xlsx", sep = "/")
+data <- read_xlsx(path = excel.fl)
 old <- data
 colnames(data)[11:13] <- c("maj/maj",	"maj/min", "min/min")
 
@@ -62,8 +63,8 @@ rownames(tidy_data) <- NULL
 
 
 
-
-snps <- read.table(file = "data/rs_code_fitness.txt", stringsAsFactors = F)[,1]
+rs_code.fl <- paste(data.dir, "rs_code_fitness.txt", sep = "/")
+snps <- read.table(file = rs_code.fl, stringsAsFactors = F)[,1]
 
 # remove snps that are not in the sql database
 # why do we have to do this? Because some of the snps in the excel are not used anymore
@@ -92,31 +93,13 @@ snps[!snps %in% tidy_data[["exm-number"]]]
 
 # Filter tidy_data and the customer data so that only snps available in the SQL database
 # the tsv file and the excel file are used
-system("grep -Fwf last/scoring_markers_illumina.txt last/data_purged.tsv > last/the_subset.tsv")
+system("grep -Fwf scoring_markers_illumina.txt data_purged.tsv > the_subset.tsv")
 
-the_subset <- read.table(file = "last/data.tsv", sep = "\t",
+the_subset <- read.table(file = "data.tsv", sep = "\t",
                  na.strings =  "--", stringsAsFactors = F, check.names = F,
                  header = T)
 
-markers <- read.table("last/marker_ids_header", header = F, stringsAsFactors = F)[,1]
-# FLIP!!!
-# metadata <- read.table(file = "last/metadata_subset.txt", stringsAsFactors = F)
-# colnames(metadata)[c(1, 4)] <- c("exm-number", "strand")
-# tidy_data <- merge(tidy_data, metadata[,c(1,4)], by = "exm-number")
-# rm(metadata)
-
-#match(metadata$V1, rownames(the_subset))
-# write(x = which(tidy_data[!duplicated(tidy_data$`exm-number`),"strand"] == "-"),
-#       file = "last/flip_records", ncolumns = 1)
-# 
-# setwd("last")
-# system("bash flip_records.sh flip_records the_subset")
-# setwd("..")
-# 
-# the_subset_flipped <- read.table(file = "last/the_subset_flipped.tsv", sep = "\t",
-#                          na.strings =  "--", stringsAsFactors = F, check.names = F,
-#                          row.names = 1)
-
+markers <- read.table("all_marker_ids", header = F, stringsAsFactors = F)[,1]
 
 sample_size <- ncol(the_subset)
 
@@ -186,13 +169,15 @@ for(i in 1:nrow(tidy_data)) {
 
 #tidy_data[which(is.na(scores)),] %>% View
 
-colnames(scores)
+scores.fl <- paste(data.dir, "scores_99.txt", sep = "/")
+tidy_scores.fl <- paste(data.dir, "tidy_data_scores.txt", sep = "/")
+the_subset.fl <- paste(data.dir, "the_subset.rds", sep = "/")
+snps_categories.fl <- paste(data.dir, "snps_categories.rds", sep = "/")
 
-
-write.table(scores, "data/scores_99.txt", quote = F, col.names = T)
-write.table(tidy_data, "data/tidy_data_scores.txt", quote = F, sep = "\t", na = "NA", row.names = F)
-saveRDS(object = the_subset, file = "data/the_subset.rds")
-saveRDS(object = snps_categories, file = "data/snps_categories.rds")
+write.table(scores, scores.fl, quote = F, col.names = T)
+write.table(tidy_data, tidy_scores.fl, quote = F, sep = "\t", na = "NA", row.names = F)
+saveRDS(object = the_subset, file = the_subset.fl)
+saveRDS(object = snps_categories, file = snps_categories.fl)
 
 ambiguous_snps <- tidy_data %>%
   filter(allele_1 == "C" & allele_2 == "G" |
@@ -200,6 +185,3 @@ ambiguous_snps <- tidy_data %>%
          allele_1 == "A" & allele_2 == "T" |
          allele_1 == "T" & allele_2 == "A") %>%
   .[["exm.number"]]
-
-
-apply(ambiguous_snps, function(x) { lapply(snps_categories, function(y) x %in% y )})

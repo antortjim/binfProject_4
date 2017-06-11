@@ -16,5 +16,6 @@ bash query_1000genomes.sh && \
 bash merge_athgene_1000genomes.sh && \
 bash plink_analysis.sh && \
 Rscript visualization.R $DATA_FOLDER && \
+bash admixture.sh && \
 Rscript admixture.R && \
 bash mail_test.sh

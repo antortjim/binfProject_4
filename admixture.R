@@ -12,7 +12,7 @@ athgene <- paste("I", 1:528, sep = "")
 
 panel <- read.table(file = "panel", header = T)
 panel <- rbind(panel,
-      data.frame(sample = athgene,
+               data.frame(sample = athgene,
                  pop = "AthGene",
                  super_pop = "AthGene",
                  gender = NA))

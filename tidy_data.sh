@@ -1,6 +1,5 @@
 #! /bin/bash
 
-DATA_FOLDER="../data"
 GTREPORT=$DATA_FOLDER/gtReport.txt
 DATA=$DATA_FOLDER/data
 MARKER_IDS=$DATA_FOLDER/marker_ids
@@ -14,8 +13,9 @@ PROBLEM=$DATA_FOLDER/problematic_marker_ids
 # Extract marker_ids
 tput setaf 2; echo "Extracting marker ids"
 cut -f 1 $GTREPORT | tail -n +2  > $MARKER_IDS
+cut -f 2- $GTREPORT | tail -n +2  > $DATA.tsv
 cp $MARKER_IDS $DATA_FOLDER/all_marker_ids
-cut -f 2- $DATA.csv > $DATA.tsv
+#cut -f 2- $DATA.csv > $DATA.tsv
 
 
 tput setaf 2; echo "Filtering problematic markers"
@@ -36,7 +36,7 @@ awk '{printf("%d %s\n", NR, $0)}' $MARKER_IDS | sort -k 2 > $DATA_FOLDER/marker_
 tput setaf 2; echo "Filtering support files with available marker_ids"
 # Subset the support files with the data available
 
-# Get exm-number, chr, coord and strand
+# Get exm-number, chr, coord and strand from MANIFEST
 awk -F',' 'NR==FNR{c[$1]++;next};c[$2] > 0' \
    <(cut -f 2 -d' ' $DATA_FOLDER/marker_ids.indexed) \
    <(tail -n +9 $MANIFEST | head -n -24) | cut -f2,11,10,21 -d',' | tr "," "\t" \
@@ -44,7 +44,7 @@ awk -F',' 'NR==FNR{c[$1]++;next};c[$2] > 0' \
 
 # NF = 4
 
-# Join sowyer with annotated, locus_report and rsids
+# Join with annotated, locus_report and rsids
 # Get genomic information (transcript, mutation...)
 join -t$'\t' -e . <(sort $DATA_FOLDER/strand.txt) <(tail -n +2 $ANNOTATED | cut -f 1,5-8 | sort -k 1) > $DATA_FOLDER/joined
 perl -p -i -e "s/\r//g" $DATA_FOLDER/joined 
@@ -71,27 +71,30 @@ rm $DATA_FOLDER/joined_3
 ## Select the marker_ids in the locus subset where maf > 0.05
 awk '{print $1}' $DATA_FOLDER/metadata_subset.txt > $MARKER_IDS.frequent
 
-#diff <(cat marker_ids.shared | cut -f 2 -d' ') <(cat locus_subset.txt | cut -f 2)
+####
+####diff <(cat marker_ids.shared | cut -f 2 -d' ') <(cat locus_subset.txt | cut -f 2)
+####
+##### Filter the marker_ids.indexed list using the marker_ids.shared list
+##### and keep the row id
+##### These are the rows we want to filter out in the main dataset
+##### becuase they correspond to snps that
+####
+####  # appear in the support files
+####  # their maf in the support file is > 0.05
+####
+##### Rows shared is a list of row numbers that contain data for markers available
+##### in the support files and with MAF > 0.05
+##### The numbers are sorted so that their marker ids are sorted alphabetically 
+##### This sort is forcing them to be sorted (in case they werent. They should anyway)
+####grep -Fwf $MARKER_IDS.frequent $MARKER_IDS.indexed | sort -k 2 | cut -f 1 -d' ' > $DATA_FOLDER/selected_rows
+####
+####
+##### Select id of good markers
+##### Index 0 to account for header
+####tput setaf 2; echo "Filtering dataset"
+####paste $DATA_FOLDER/all_marker_ids $DATA.tsv | sort -k 1 -t$'\t' > $DATA_FOLDER/data_rownames.tsv
+##### sort the rows of the data according to the marker ids
 
-## Filter the marker_ids.indexed list using the marker_ids.shared list
-## and keep the row id
-## These are the rows we want to filter out in the main dataset
-## becuase they correspond to snps that
-#
-#  # appear in the support files
-#  # their maf in the support file is > 0.05
-#
-## Rows shared is a list of row numbers that contain data for markers available
-## in the support files and with MAF > 0.05
-## The numbers are sorted so that their marker ids are sorted alphabetically
-grep -Fwf $MARKER_IDS.frequent $MARKER_IDS.indexed | sort -k 2 | cut -f 1 -d' ' > $DATA_FOLDER/selected_rows
-
-#
-## Select id of good markers
-## Index 0 to account for header
-#tput setaf 2; echo "Filtering dataset"
-paste $DATA_FOLDER/all_marker_ids $DATA.tsv | sort -k 1 -t$'\t' > $DATA_FOLDER/data_rownames.tsv
-## sort the rows of the data according to the marker ids
 grep -Fwf $MARKER_IDS.frequent $DATA_FOLDER/data_rownames.tsv | sort -k 1 > $DATA_FOLDER/data_purged.tsv
 
 

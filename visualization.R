@@ -33,7 +33,7 @@ df$density <- dot_density
 
 fl <- paste(data.dir, "maf0.05.eigenval", sep = "/")
 eigenval <- read.table(file = fl, header = F)$V1
-individuals.fl <- paste(data.dir, "1000_genomes/individuals_athgene.txt", sep = "/")
+individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
 people <- read.table(file = individuals.fl,
                      col.names = c("ind", "pop", "super", "gender", "batch"),
                      fill = T)

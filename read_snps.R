@@ -43,11 +43,11 @@ metadata %>% arrange(chr) %>% write.table(file = "metadata.txt",
 message("Reading data")
 # read data from AthGene
 data.fl <- paste(data.dir, "data_purged_transposed.tsv", sep = "/")
-id.fl <- paste(data.dir, "marker_ids.frequent", sep = "/")
-index.fl <- paste(data.dir, "selected_rows", sep = "/")
+#id.fl <- paste(data.dir, "marker_ids.frequent", sep = "/")
+#index.fl <- paste(data.dir, "selected_rows", sep = "/")
 
-id <- read.table(file = id.fl, stringsAsFactors = F)[,1]
-index <- read.table(file = index.fl)[,1]
+#id <- read.table(file = id.fl, stringsAsFactors = F)[,1]
+#index <- read.table(file = index.fl)[,1]
 
 column_names <- metadata %>% apply(MARGIN = 1, function(x) {
   x[c("illumina_code", "chr", "rs_code", "cM", "coord")] %>% as.character %>% paste(collapse = ":") }) %>%

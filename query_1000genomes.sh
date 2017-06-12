@@ -1,6 +1,7 @@
-CHROMOSOMES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22)
+#CHROMOSOMES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22)
+CHROMOSOMES=(15 16 17 18 19 20 21 22)
 GENOMES=$DATA_FOLDER/1000_genomes
-rm -rf $GENOMES
+cd $DATA_FOLDER
 mkdir $GENOMES
 
 tput setaf 2; echo "Filtering individuals in 1000Genomes"
@@ -13,7 +14,7 @@ wget $PANEL -O $DATA_FOLDER/panel
 #cat $DATA_FOLDER/panel | awk '$2 == "CEU" || $2 == "PEL" || $2 == "CHB" \
 #                || $2 == "ITU" || $2 == "ACB" {print}' > $GENOMES/individuals.txt
 
-cp $DATA_FOLDER/panel $DATA_FOLDER/individuals
+cp $DATA_FOLDER/panel $DATA_FOLDER/individuals.txt
 
 # Reset the list of chromosomes that have been added
 truncate -s 0 $GENOMES/merge_list 
@@ -37,7 +38,7 @@ do
   # Outut a tped (text pedigree file)
   vcftools --gzvcf $VCFGZ_FILE \
     --snps $GENOMES/rs_chr$CHR.txt \
-    --keep <(cut -f1 $GENOMES/individuals.txt) \
+    --keep <(cut -f1 $DATA_FOLDER/individuals.txt) \
     --plink-tped --chr $CHR --out $GENOMES/chr${CHR}_result
 
    # Transform the tped file in a binary pedigree file ready for plink

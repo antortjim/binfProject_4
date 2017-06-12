@@ -1,8 +1,8 @@
 #! /bin/bash
 
 DATA_FOLDER="../data"
-GTREPORT=$DATA_FOLDER/data.csv
-DATA=$DATA_FOLDER/data.tsv
+GTREPORT=$DATA_FOLDER/gtReport.txt
+DATA=$DATA_FOLDER/data
 MARKER_IDS=$DATA_FOLDER/marker_ids
 RSIDS=$DATA_FOLDER/Exome_24/InfiniumExome-24v1-1_A1_b144_rsids.txt
 ANNOTATED=$DATA_FOLDER/Exome_24/InfiniumExome-24v1-1_A1.annotated.txt
@@ -13,8 +13,9 @@ PROBLEM=$DATA_FOLDER/problematic_marker_ids
 
 # Extract marker_ids
 tput setaf 2; echo "Extracting marker ids"
+cut -f 1 $GTREPORT | tail -n +2  > $MARKER_IDS
 cp $MARKER_IDS $DATA_FOLDER/all_marker_ids
-cut -f 2- $GTREPORT > $DATA
+cut -f 2- $DATA.csv > $DATA.tsv
 
 
 tput setaf 2; echo "Filtering problematic markers"
@@ -89,20 +90,10 @@ grep -Fwf $MARKER_IDS.frequent $MARKER_IDS.indexed | sort -k 2 | cut -f 1 -d' ' 
 ## Select id of good markers
 ## Index 0 to account for header
 #tput setaf 2; echo "Filtering dataset"
-paste $DATA_FOLDER/all_marker_ids $DATA | sort -k 1 -t$'\t' > $DATA_FOLDER/data_rownames.tsv
+paste $DATA_FOLDER/all_marker_ids $DATA.tsv | sort -k 1 -t$'\t' > $DATA_FOLDER/data_rownames.tsv
 ## sort the rows of the data according to the marker ids
 grep -Fwf $MARKER_IDS.frequent $DATA_FOLDER/data_rownames.tsv | sort -k 1 > $DATA_FOLDER/data_purged.tsv
 
-
-### Add rscode to variants that lack it in the support files by taking it from SeattleSNPs
-## This command looks up the chr and the coord of the snps missing rscode and uses that to query 
-## the seattlesnp and returns the positions queried along with the found rscode
-#
-##grep -Fwf <(grep -Fwf <(awk -F"\t" '$2 !~ "rs"' nomenclature_subset.txt | cut -f 1) annotation_subset.txt | awk '$2 != 0 {printf ("%s\t%s\n", $2, $3)}') /home/antortjim/MEGA/AthGene/data/seatle_snps/SeattleSeqAnnotation138.seattle_custom.395898255493.txt | cut -f 2,3,11 | uniq | sort -k1 -k2 > found_variants
-##
-##paste found_variants <(grep -Fwf <(awk '{printf "%s-%s\n", $1, $2}' found_variants) <(sort -k2 -k3 -t$'\t' annotation_subset.txt | awk '{printf "%s-%s\t%s\n", $2, $3, $1}') | awk '{print $2}') | cut -f 3,4 > out
-##grep -vE "^0" out | sed 's/^/rs/' | awk '{printf "%s\t%s\n", $2, $1}' > found_variants
-##rm out
 
 # transpose data
 tput setaf 2; echo "Transposing table"

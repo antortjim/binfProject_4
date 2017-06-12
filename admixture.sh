@@ -4,5 +4,11 @@ ADMIXTURE=../code/admixture
 #do echo "K=$i"; $ADMIXTURE --cv merged_clean.bed $i; done >> cvoutput
 #grep -i 'CV error' cvoutput
 
-$ADMIXTURE merged_clean.bed 5
+
+awk '$2 = "ITU | $2 = "CHB" | $2 = "CEU" | \
+ $2 = "PEL" | $2 = "ACB" {print $1}' panel > representative_subset
+plink --bfile merged_clean.bed --keep representative_subset \
+  --out representative_subset
+
+$ADMIXTURE representative_subset.bed 5
 

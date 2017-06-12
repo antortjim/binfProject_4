@@ -10,13 +10,15 @@ export MANIFEST=$DATA_FOLDER/Exome_24/InfiniumExome-24v1-1_A1.csv
 export STRAND=$DATA_FOLDER/Exome_24/InfiniumCoreExome-24v1-1_A-b37.strand
 export PROBLEM=$DATA_FOLDER/problematic_marker_ids
 
-python extract_rscodes_fitness.py $DATA_FOLDER && \
+# Uncomment if sql database available,
+# otherwise stick to the supplied rs_code_fitness.txt in data
+#python extract_rscodes_fitness.py $DATA_FOLDER && \
 bash tidy_data.sh && \
 Rscript read_snps.R $DATA_FOLDER && \
 bash query_1000genomes.sh && \
 bash merge_athgene_1000genomes.sh && \
-bash plink_analysis.sh && \
-Rscript visualization.R $DATA_FOLDER && \
-bash admixture.sh && \
-Rscript admixture.R && \
+#bash plink_analysis.sh && \
+#Rscript visualization.R $DATA_FOLDER && \
+#bash admixture.sh && \
+#Rscript admixture.R && \
 bash mail_test.sh

@@ -1,14 +1,19 @@
 CHROMOSOMES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22)
 GENOMES=$DATA_FOLDER/1000_genomes
+rm -rf $GENOMES
 mkdir $GENOMES
 
 tput setaf 2; echo "Filtering individuals in 1000Genomes"
 # Generate file with individuals ID. So far let's select GBR
 PANEL=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel
 
-# Select all individuals
 wget $PANEL -O $DATA_FOLDER/panel
-cat $DATA_FOLDER/panel | awk '$3 != "super_pop" {print}' > $GENOMES/individuals.txt
+# Select the individuals
+## CEU (EUR) PEL (AMR) CHB (EAS) ITU (EAS) ACB (AFR, African Caribbean in Barbados)
+#cat $DATA_FOLDER/panel | awk '$2 == "CEU" || $2 == "PEL" || $2 == "CHB" \
+#                || $2 == "ITU" || $2 == "ACB" {print}' > $GENOMES/individuals.txt
+
+cp $DATA_FOLDER/panel $DATA_FOLDER/individuals
 
 # Reset the list of chromosomes that have been added
 truncate -s 0 $GENOMES/merge_list 

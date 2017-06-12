@@ -4,7 +4,8 @@ theme_set(theme_bw())
 library("ggrepel")
 library("dplyr")
 library("GGally")
-data.dir <- commandArgs(trailingOnly = T)
+#data.dir <- commandArgs(trailingOnly = T)
+data.dir <- "~/MEGA/AthGene/data"
 setwd(data.dir)
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 athgene <- paste("I", 1:528, sep = "")
@@ -32,7 +33,7 @@ df$density <- dot_density
 
 fl <- paste(data.dir, "maf0.05.eigenval", sep = "/")
 eigenval <- read.table(file = fl, header = F)$V1
-individuals.fl <- paste(data.dir, "1000_genomes/individuals.txt", sep = "/")
+individuals.fl <- paste(data.dir, "1000_genomes/individuals_athgene.txt", sep = "/")
 people <- read.table(file = individuals.fl,
                      col.names = c("ind", "pop", "super", "gender", "batch"),
                      fill = T)
@@ -47,20 +48,31 @@ groups <- select_(df, paste("-(", interval, ")", sep = ""))
 
 ggplot(data = filter(df, pop %in% c("CEU", "PEL", "CHB", "AthGene", "ITU", "ACB")),
        mapping = aes(x = C1, y = C2, col = super)) +
-  geom_point() +  scale_colour_manual(values=cbPalette) +
-  coord_fixed()
+  geom_point() +  scale_colour_manual(values = cbPalette,
+                                      name = "Population")
 
 
-temp <- filter(df, pop == "AthGene")
-temp$ind <- factor(temp$ind %>% as.character, levels = athgene)
-temp <- arrange(temp, ind)
 
-query <- select(temp, C1, C2, C3, C4) %>% as.matrix
-ref <- select(filter(df, pop != "AthGene"), C1, C2, C3, C4) %>% as.matrix
+ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
+ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
 
-remove_fam <- read.table(file = "maf0.05.remove.fam")[,1]
-athgene <- athgene[!(athgene %in% remove_fam)]
-super_pop <- filter(df, pop != "AthGene") %>% .$super
+ggplot(data = filter(df, pop == "AthGene"),
+       mapping = aes(x = C1, y = C2, col = batch)) +
+  geom_text(mapping = aes(label = batch), size = 3)
+
+ggsave("../plots/batches.png")
+
+
+# temp <- filter(df, pop == "AthGene")
+# temp$ind <- factor(temp$ind %>% as.character, levels = athgene)
+# temp <- arrange(temp, ind)
+# 
+# query <- select(temp, C1, C2, C3, C4) %>% as.matrix
+# ref <- select(filter(df, pop != "AthGene"), C1, C2, C3, C4) %>% as.matrix
+# 
+# remove_fam <- read.table(file = "maf0.05.remove.fam")[,1]
+# athgene <- athgene[!(athgene %in% remove_fam)]
+# super_pop <- filter(df, pop != "AthGene") %>% .$super
 
 #k_nearest_neighbors <-  5
 #distances <- apply(X = query, MARGIN = 1, FUN = function(x) sqrt(rowSums((sweep(ref, 2, x))^2)))
@@ -75,16 +87,6 @@ super_pop <- filter(df, pop != "AthGene") %>% .$super
 #  super = winners)
 #
 #write.table(ancestry, file = "pca_ancestry.txt", quote = F, row.names = F, col.names = F)
-  
-  
-ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
-ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
-
-ggplot(data = filter(df, pop == "AthGene"),
-       mapping = aes(x = C1, y = C2, col = batch)) +
-  geom_text(mapping = aes(label = batch), size = 3)
-
-ggsave("../plots/batches.png")
 
 # scatmat(filter(data.frame(components[,1:5], groups), pop == "AthGene"),
 #         color = "batch")

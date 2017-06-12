@@ -23,7 +23,7 @@ flip_strand <- function(myRow) {
 }
 
 
-message("Reading data")
+message("Reading metadata")
 # read genes metadata
 fl <- paste(data.dir, "metadata_subset.txt", sep = "/")
 metadata <- read.table(file = fl, na.strings = c("."),
@@ -35,21 +35,12 @@ metadata <- read.table(file = fl, na.strings = c("."),
 
 
 
-# message("Flipping alleles to + strand")
-# alleles <- lapply(X = metadata$alleles, FUN = function(x) strsplit(x = x, split = "")) %>%
-#   unlist %>% matrix(ncol = 2, byrow = T, dimnames = list(NULL, c("allele_1", "allele_2")))
-# metadata <- data.frame(select(metadata, -alleles), alleles)
-
-# metadata <- t(apply(X = metadata,
-#                 MARGIN = 1,
-#                 FUN = function(x) {flip_strand(x)})) %>%
-#   as.data.frame(stringsAsFactors = F)
-
 metadata$cM <- 0
 
 metadata %>% arrange(chr) %>% write.table(file = "metadata.txt",
                                           quote = F, row.names = F, sep = "\t")
 
+message("Reading data")
 # read data from AthGene
 data.fl <- paste(data.dir, "data_purged_transposed.tsv", sep = "/")
 id.fl <- paste(data.dir, "marker_ids.frequent", sep = "/")

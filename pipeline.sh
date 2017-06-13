@@ -9,7 +9,7 @@ export LOCUS_REPORT=$DATA_FOLDER/Exome_24/InfiniumExome-24v1-1_A1_LocusReport.tx
 export MANIFEST=$DATA_FOLDER/Exome_24/InfiniumExome-24v1-1_A1.csv
 export STRAND=$DATA_FOLDER/Exome_24/InfiniumCoreExome-24v1-1_A-b37.strand
 export PROBLEM=$DATA_FOLDER/problematic_marker_ids
-export FLIP="flip"
+export FLIP="remove"
 
 # Uncomment if sql database available,
 # otherwise stick to the supplied rs_code_fitness.txt in data

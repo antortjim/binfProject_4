@@ -50,6 +50,9 @@
          mapping = aes(x = C1, y = C2, col = super)) +
     geom_point() +  scale_colour_manual(values = cbPalette,
                                         name = "Population")
+  
+  
+filter(df, super == "AthGene" & C2 > 0.03)
 
 
 

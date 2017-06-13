@@ -3,8 +3,8 @@ library("dplyr")
 library("waffle")
 library("shiny")
 
-data.dir <- commandArgs(trailingOnly = T)[[1]]
-#data.dir <- "~/MEGA/AthGene/data"
+#data.dir <- commandArgs(trailingOnly = T)[[1]]
+data.dir <- "~/MEGA/AthGene/data"
 setwd(data.dir)
 
 

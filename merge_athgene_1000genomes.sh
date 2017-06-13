@@ -6,7 +6,7 @@ cd $DATA_FOLDER
 tput setaf 2; echo "Merging 1000Genomes and AthGene"
 
 # Generate bed file from tped generated in R
-plink --tfile athgene --make-bed --out athgene
+plink --tfile athgene --geno 0.1 --make-bed --out athgene
 
 
 # Flip alleles in the reverse strand!!!!!

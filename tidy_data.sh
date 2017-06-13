@@ -15,89 +15,139 @@ tput setaf 2; echo "Extracting marker ids"
 cut -f 1 $GTREPORT | tail -n +2  > $MARKER_IDS
 cut -f 2- $GTREPORT | tail -n +2  > $DATA.tsv
 cp $MARKER_IDS $DATA_FOLDER/all_marker_ids
-#cut -f 2- $DATA.csv > $DATA.tsv
-
-
-tput setaf 2; echo "Filtering problematic markers"
-# remove the marker ids that lack rscode
-awk '$2 == "." {print $1}' $RSIDS > $PROBLEM
-# remove the marker ids in chr 0
-awk '$2 == 0 {print $1}' $ANNOTATED >> $PROBLEM
-
-# remove INDELS
-grep IND $MARKER_IDS >> $DATA_FOLDER/problematic_marker_ids
-
-grep -Fwvf $DATA_FOLDER/problematic_marker_ids $MARKER_IDS > $DATA_FOLDER/out
-mv $DATA_FOLDER/out $MARKER_IDS
-
-# Index them starting at 1 and sort them alphabetically
-awk '{printf("%d %s\n", NR, $0)}' $MARKER_IDS | sort -k 2 > $DATA_FOLDER/marker_ids.indexed
+cut -f 2- $DATA.csv > $DATA.tsv
 
 tput setaf 2; echo "Filtering support files with available marker_ids"
+####################################################
+####################################################
 # Subset the support files with the data available
 
 # Get exm-number, chr, coord and strand from MANIFEST
+tput setaf 2; echo "Manifest"
 awk -F',' 'NR==FNR{c[$1]++;next};c[$2] > 0' \
-   <(cut -f 2 -d' ' $DATA_FOLDER/marker_ids.indexed) \
-   <(tail -n +9 $MANIFEST | head -n -24) | cut -f2,11,10,21 -d',' | tr "," "\t" \
-   > $DATA_FOLDER/strand.txt
+   $MARKER_IDS \
+   <(tail -n +9 $MANIFEST | head -n -24) \
+   | cut -f2,11,10,21 -d',' | tr "," "\t" | sort -k1 > \
+   $DATA_FOLDER/strand.txt
+
 
 # NF = 4
-
 # Join with annotated, locus_report and rsids
 # Get genomic information (transcript, mutation...)
-join -t$'\t' -e . <(sort $DATA_FOLDER/strand.txt) <(tail -n +2 $ANNOTATED | cut -f 1,5-8 | sort -k 1) > $DATA_FOLDER/joined
-perl -p -i -e "s/\r//g" $DATA_FOLDER/joined 
+tput setaf 2; echo "annotated"
+join -t$'\t' -e . $DATA_FOLDER/strand.txt \
+    <(tail -n +2 $ANNOTATED | cut -f 1,5-8 | sort -k1) \
+    > $DATA_FOLDER/joined
+perl -p -i -e "s/\r//g" $DATA_FOLDER/joined
 
 # NF = 4 + 4
 # Get allele frequencies
-join -t$'\t' -e . $DATA_FOLDER/joined <(tail -n +2 $LOCUS_REPORT | cut -f 2,5-9 | sort -k 1) > $DATA_FOLDER/joined_2
+tput setaf 2; echo "maf"
+join -t$'\t' -e . $DATA_FOLDER/joined \
+    <(tail -n +2 $LOCUS_REPORT | cut -f 2,5-9 | sort -k1) \
+    > $DATA_FOLDER/joined_2
 
 # NF = 8 + 5 = 13
 # Get rscode
-join -t$'\t' -e . $DATA_FOLDER/joined_2 <(tail -n +2 $RSIDS | sort -k1) > $DATA_FOLDER/joined_3
-perl -p -i -e "s/\r//g" $DATA_FOLDER/joined_3 
-
+tput setaf 2; echo "rscode"
+join -t$'\t' -e . $DATA_FOLDER/joined_2 <(tail -n +2 $RSIDS | sort -k1) \
+    > $DATA_FOLDER/metadata.txt
+perl -p -i -e "s/\r//g" $DATA_FOLDER/metadata.txt
 # NF = 13 + 1 = 14
-rm $DATA_FOLDER/joined $DATA_FOLDER/joined_2
+
+
+#rm $DATA_FOLDER/joined $DATA_FOLDER/joined_2
+####################################################
+
+
+tput setaf 2; echo "Filtering problematic markers"
+####################################################
+####################################################
+# remove the marker ids that lack rscode
+# remove the marker ids in chr 0
+# remove INDELS
+# remove snps with identical rscode but different exm-number
+
+awk '$14 == "." || $2 == 0 || $1 ~ "IND" {print $1}' $DATA_FOLDER/metadata.txt \
+    > $PROBLEM
+
+awk '$14 != "." && $2 != 0 && $1 !~ "IND" {print}' $DATA_FOLDER/metadata.txt \
+    > $DATA_FOLDER/metadata_clean.txt
+
+# remove non first entries of snps with identical rscode but different exm
+sort -u -k14 $DATA_FOLDER/metadata_clean.txt > $DATA_FOLDER/temp
+mv $DATA_FOLDER/temp $DATA_FOLDER/metadata_clean.txt
+
+grep "IND" $MARKER_IDS >> $PROBLEM
+sort $PROBLEM | uniq > $DATA_FOLDER/temp
+mv $DATA_FOLDER/temp $PROBLEM
+
+grep -Fwvf $PROBLEM $MARKER_IDS > $DATA_FOLDER/out
+cp $DATA_FOLDER/out $MARKER_IDS
+
+# Index them starting at 1 and sort them alphabetically
+awk '{printf("%d %s\n", NR, $0)}' $MARKER_IDS | sort -k 2 \
+    > $DATA_FOLDER/marker_ids.indexed
+
 
 tput setaf 2; echo "Filtering maf < 0.05"
 # we are also filtering snps containing indels (there might be snps
 # with ids that don't suggest it's an indel
-awk '$13 > 0.05' $DATA_FOLDER/joined_3 | tail -n +2 > $DATA_FOLDER/metadata_subset.txt
-rm $DATA_FOLDER/joined_3
+awk '$13 > 0.05' $DATA_FOLDER/metadata_clean.txt \
+    | sort -k1 \
+    > $DATA_FOLDER/metadata_purged.txt
 
+#rm $DATA_FOLDER/metadata.txt
 
+tput setaf 2; echo "Filtering dataset"
+######################################
 ## Select the marker_ids in the locus subset where maf > 0.05
-awk '{print $1}' $DATA_FOLDER/metadata_subset.txt > $MARKER_IDS.frequent
+cut -f1 $DATA_FOLDER/metadata_purged.txt > ${MARKER_IDS}_purged
+cut -f14 $DATA_FOLDER/metadata_purged.txt > $DATA_FOLDER/rscodes
 
-####
-####diff <(cat marker_ids.shared | cut -f 2 -d' ') <(cat locus_subset.txt | cut -f 2)
-####
-##### Filter the marker_ids.indexed list using the marker_ids.shared list
-##### and keep the row id
-##### These are the rows we want to filter out in the main dataset
-##### becuase they correspond to snps that
-####
-####  # appear in the support files
-####  # their maf in the support file is > 0.05
-####
-##### Rows shared is a list of row numbers that contain data for markers available
-##### in the support files and with MAF > 0.05
-##### The numbers are sorted so that their marker ids are sorted alphabetically 
-##### This sort is forcing them to be sorted (in case they werent. They should anyway)
-####grep -Fwf $MARKER_IDS.frequent $MARKER_IDS.indexed | sort -k 2 | cut -f 1 -d' ' > $DATA_FOLDER/selected_rows
-####
-####
-##### Select id of good markers
-##### Index 0 to account for header
-####tput setaf 2; echo "Filtering dataset"
-####paste $DATA_FOLDER/all_marker_ids $DATA.tsv | sort -k 1 -t$'\t' > $DATA_FOLDER/data_rownames.tsv
-##### sort the rows of the data according to the marker ids
+# 1
+paste $DATA_FOLDER/all_marker_ids \
+    <(tail -n +2 $DATA.tsv) \
+    | sort -k 1 -t$'\t' \
+    > $DATA_FOLDER/data_rownames.tsv
 
-grep -Fwf $MARKER_IDS.frequent $DATA_FOLDER/data_rownames.tsv | sort -k 1 > $DATA_FOLDER/data_purged.tsv
+# 2
+grep -Fwf ${MARKER_IDS}_purged $DATA_FOLDER/data_rownames.tsv \
+    | sort -k 1 > $DATA_FOLDER/data_purged.tsv
+
+# Generate tped
+######################################
+
+# 3
+cut -f2- $DATA_FOLDER/data_purged.tsv | expand -t1 | tr "-" "0" \
+    | sed -e 's/ //g' | sed -e 's/\(.\)/\1\t/g' \
+    > $DATA_FOLDER/data.tped
 
 
-# transpose data
-tput setaf 2; echo "Transposing table"
-bash transpose.sh $DATA_FOLDER/data_purged.tsv > $DATA_FOLDER/data_purged_transposed.tsv
+cd $DATA_FOLDER
+NMARKS=$(cat metadata_purged.txt | wc -l)
+yes 0 | head -n $NMARKS > cM
+
+# 4
+paste <(cut -f2 metadata_purged.txt) \
+      <(cut -f14 metadata_purged.txt) cM \
+      <(cut -f3 metadata_purged.txt) \
+      > left.tped
+
+paste left.tped data.tped > athgene.tped
+#rm cM left.tped data.tped
+
+truncate -s 0 athgene_individuals.txt iid father phenotype athgene.tfam
+# Generate tfam
+######################################
+NINDIV=528
+for i in $(seq $NINDIV)
+do
+  echo "I$i" >> athgene_individuals.txt
+  echo "1" >> iid
+  echo "0" >> father
+  echo "-9" >> phenotype
+done
+
+paste athgene_individuals.txt iid father father father phenotype \
+    > athgene.tfam

@@ -1,5 +1,5 @@
-#CHROMOSOMES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22)
-CHROMOSOMES=(15 16 17 18 19 20 21 22)
+CHROMOSOMES=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22)
+#CHROMOSOMES=(22)
 GENOMES=$DATA_FOLDER/1000_genomes
 cd $DATA_FOLDER
 mkdir $GENOMES
@@ -27,7 +27,7 @@ for CHR in "${CHROMOSOMES[@]}"
 do
   tput setaf 4; echo "Chromosome $CHR"
   # Find the SNPs in our data that belong to the current chromosome
-  tail -n +2 $DATA_FOLDER/metadata_subset.txt | awk -F"\t" '$2 == '$CHR' {print $14}' | \
+  cat $DATA_FOLDER/metadata_purged.txt | awk -F"\t" '$2 == '$CHR' {print $14}' | \
   grep -v NA | tr ',' '\n' > $GENOMES/rs_chr${CHR}.txt
 
   # Define the route to the vcfgz + vcfgz.tbi files

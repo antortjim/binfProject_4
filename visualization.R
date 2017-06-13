@@ -1,55 +1,55 @@
-rm(list = ls())
-library("ggplot2")
-theme_set(theme_bw())
-library("ggrepel")
-library("dplyr")
-library("GGally")
-#data.dir <- commandArgs(trailingOnly = T)
-data.dir <- "~/MEGA/AthGene/data"
-setwd(data.dir)
-cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-athgene <- paste("I", 1:528, sep = "")
-
-fl <- paste(data.dir, "maf0.05.eigenvec", sep = "/")
-df <- read.table(file = fl, header = F)
-NF <- system(paste("awk '{print NF; exit}' ", fl, sep = ""), intern = T) %>% as.numeric
-if(NF < 202) {
-  colnames(df) <- c("ind", "X", paste("C", 1:(NF-2), sep = ""))
-  interval <- paste("C1:C", NF-2, sep = "")
-  NF <- NF - 2
-  } else {
-  colnames(df) <- c("ind", "X", paste("C", 1:200, sep = ""))
-  NF <- 200
-  interval <- paste("C1:C", NF, sep = "")
-}
-
-density_computer <- function(df, col1, col2) {
-  result <- fields::interp.surface(MASS::kde2d(df[[col1]], df[[col2]]), df[,c(col1, col2)])
-}
-
-dot_density <- density_computer(df, "C1", "C2")
-df$density <- dot_density
-#df$density <- 0.2
-
-fl <- paste(data.dir, "maf0.05.eigenval", sep = "/")
-eigenval <- read.table(file = fl, header = F)$V1
-individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
-people <- read.table(file = individuals.fl,
-                     col.names = c("ind", "pop", "super", "gender", "batch"),
-                     fill = T)
-people$batch <- factor(people$batch)
-df <- merge(df, people, by = "ind")
-
-components <- select_(df, interval)
-groups <- select_(df, paste("-(", interval, ")", sep = ""))
-# p <- scatmat(data.frame(components[,1:5], groups), color = "super") +
-#   scale_colour_manual(values=cbPalette)
-# ggsave(p, dpi = 360, filename = "scatmat.png", height = 20, width = 30)
-
-ggplot(data = filter(df, pop %in% c("CEU", "PEL", "CHB", "AthGene", "ITU", "ACB")),
-       mapping = aes(x = C1, y = C2, col = super)) +
-  geom_point() +  scale_colour_manual(values = cbPalette,
-                                      name = "Population")
+  rm(list = ls())
+  library("ggplot2")
+  theme_set(theme_bw())
+  library("ggrepel")
+  library("dplyr")
+  library("GGally")
+  #data.dir <- commandArgs(trailingOnly = T)
+  data.dir <- "~/MEGA/AthGene/data"
+  setwd(data.dir)
+  cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+  athgene <- paste("I", 1:528, sep = "")
+  
+  fl <- paste(data.dir, "maf0.05.eigenvec", sep = "/")
+  df <- read.table(file = fl, header = F)
+  NF <- system(paste("awk '{print NF; exit}' ", fl, sep = ""), intern = T) %>% as.numeric
+  if(NF < 202) {
+    colnames(df) <- c("ind", "X", paste("C", 1:(NF-2), sep = ""))
+    interval <- paste("C1:C", NF-2, sep = "")
+    NF <- NF - 2
+    } else {
+    colnames(df) <- c("ind", "X", paste("C", 1:200, sep = ""))
+    NF <- 200
+    interval <- paste("C1:C", NF, sep = "")
+  }
+  
+  density_computer <- function(df, col1, col2) {
+    result <- fields::interp.surface(MASS::kde2d(df[[col1]], df[[col2]]), df[,c(col1, col2)])
+  }
+  
+  dot_density <- density_computer(df, "C1", "C2")
+  df$density <- dot_density
+  #df$density <- 0.2
+  
+  fl <- paste(data.dir, "maf0.05.eigenval", sep = "/")
+  eigenval <- read.table(file = fl, header = F)$V1
+  individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
+  people <- read.table(file = individuals.fl,
+                       col.names = c("ind", "pop", "super", "gender", "batch"),
+                       fill = T)
+  people$batch <- factor(people$batch)
+  df <- merge(df, people, by = "ind")
+  
+  components <- select_(df, interval)
+  groups <- select_(df, paste("-(", interval, ")", sep = ""))
+  # p <- scatmat(data.frame(components[,1:5], groups), color = "super") +
+  #   scale_colour_manual(values=cbPalette)
+  # ggsave(p, dpi = 360, filename = "scatmat.png", height = 20, width = 30)
+  
+  ggplot(data = filter(df, pop %in% c("CEU", "PEL", "CHB", "AthGene", "ITU", "ACB")),
+         mapping = aes(x = C1, y = C2, col = super)) +
+    geom_point() +  scale_colour_manual(values = cbPalette,
+                                        name = "Population")
 
 
 

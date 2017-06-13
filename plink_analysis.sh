@@ -21,10 +21,17 @@ plink --make-bed --bfile sorted --maf 0.05 --out maf0.05
 plink --bfile maf0.05 --indep 50 5 2 --out maf0.05
 
 ## Analyze Identity By Descent individual wise
-plink --bfile maf0.05 --extract maf0.05.prune.in --genome --min 0.1 --out maf0.05
-grep -Fwvf <(tail -n +2 maf0.05.genome | awk '{print $3}' | sort | uniq) <(tail -n +2 maf0.05.genome | awk '{print $1}' | sort | uniq)> maf0.05.remove.fam
-#plink --make-bed --bfile sorted --maf 0.05 --geno 0.1 --remove-fam maf0.05.remove.fam --out maf0.05
-plink --make-bed --bfile sorted --maf 0.05 --remove-fam maf0.05.remove.fam --out maf0.05
+plink --bfile maf0.05 --extract maf0.05.prune.in \
+    --genome --min 0.1 --out maf0.05
+
+grep -Fwvf <(tail -n +2 maf0.05.genome | awk '{print $3}' | sort | uniq) \
+           <(tail -n +2 maf0.05.genome | awk '{print $1}' | sort | uniq) \
+           > maf0.05.remove.fam
+
+#plink --make-bed --bfile sorted --maf 0.05 --geno 0.1 --remove-fam \
+    maf0.05.remove.fam --out maf0.05
+plink --make-bed --bfile sorted --maf 0.05 --remove-fam \
+    maf0.05.remove.fam --out maf0.05
 
 # prunes the snps and removes linkage desiquilibrium (LD)
 plink --bfile maf0.05 --indep 50 5 2 --out maf0.05

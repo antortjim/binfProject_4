@@ -46,16 +46,22 @@
   #   scale_colour_manual(values=cbPalette)
   # ggsave(p, dpi = 360, filename = "scatmat.png", height = 20, width = 30)
   
-  ggplot(data = filter(df, pop %in% c("CEU", "PEL", "CHB", "AthGene", "ITU", "ACB")),
-         mapping = aes(x = C1, y = C2, col = super)) +
+  df$density <- fields::interp.surface(
+    MASS::kde2d(df$C1, df$C2), df[,c("C1", "C2")])
+  
+  df[df$super == "AthGene", "density"] <- 1
+  
+  
+  #ggplot(data = filter(df, pop %in% c("CEU", "PEL", "CHB", "AthGene", "ITU", "ACB")),
+  #df$alpha <- ifelse(df$super == "AthGene", 0.8, 0.2)
+  ggplot(data = df,
+         mapping = aes(x = C1, y = C2,
+                       col = super, alpha = 1/density)) +
     geom_point() +  scale_colour_manual(values = cbPalette,
-                                        name = "Population")
+                                        name = "Population") +
+    guides(alpha = F)
   
   
-filter(df, super == "AthGene" & C2 > 0.03)
-
-
-
 ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
 ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
 

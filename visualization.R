@@ -12,6 +12,8 @@
   
   fl <- paste(data.dir, "maf0.05.eigenvec", sep = "/")
   df <- read.table(file = fl, header = F)
+  
+  
   NF <- system(paste("awk '{print NF; exit}' ", fl, sep = ""), intern = T) %>% as.numeric
   if(NF < 202) {
     colnames(df) <- c("sample", "X", paste("C", 1:(NF-2), sep = ""))
@@ -21,7 +23,10 @@
     colnames(df) <- c("sample", "X", paste("C", 1:200, sep = ""))
     NF <- 200
     interval <- paste("C1:C", NF, sep = "")
-  }
+    }
+  
+  vals_df <- data.frame(value = eigenval, component = 1:NF)
+  
   
   density_computer <- function(df, col1, col2) {
     result <- fields::interp.surface(MASS::kde2d(df[[col1]], df[[col2]]), df[,c(col1, col2)])
@@ -59,7 +64,9 @@
                        col = super, alpha = 1/density)) +
     geom_point() +  scale_colour_manual(values = cbPalette,
                                         name = "Population") +
-    guides(alpha = F)
+    guides(alpha = F) +
+    labs(x = paste("PC1 ", round(vals_df$value[1] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""),
+         y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""))
   
   
 ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
@@ -67,7 +74,7 @@ ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
 
 ggplot(data = filter(df, pop == "AthGene"),
        mapping = aes(x = C1, y = C2, col = batch)) +
-  geom_text(mapping = aes(label = batch), size = 3)
+  geom_text(mapping = aes(label = batch), size = 3, show.legend = F)
 
 ggsave("../plots/batches.png")
 
@@ -103,16 +110,16 @@ ggsave("../plots/batches.png")
 #filter(df, pop == "AthGene") %>% select(C1, C2, batch) %>% group_by(batch) %>% summarise(n())
 
 
-vals_df <- data.frame(value = eigenval, component = 1:NF)
-
 ggplot(data = vals_df,
        mapping = aes(x = component, y = cumsum(value) / sum(value))) +
   geom_bar(stat = "identity", width = 1)
 
 ggplot(data = vals_df,
        mapping = aes(x = component, y = cumsum(value)/sum(value))) +
-  geom_line()
+  geom_line() +
+  labs(x = "Component", y = "Cumulative variance")
 
+ggsave("../plots/cumulative_variance.png")
 
 #cumsum(eigenvals) / sum(eigenvals)
 
@@ -124,6 +131,7 @@ genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
 group_by(genome, super) %>% summarise(count = n())
 filter(genome, PI_HAT > 0.1) %>% nrow
 genome %>% nrow
+
 
 #genome %>% filter(Z2 == 1) %>% View
 ggplot(data = genome,

@@ -14,11 +14,11 @@
   df <- read.table(file = fl, header = F)
   NF <- system(paste("awk '{print NF; exit}' ", fl, sep = ""), intern = T) %>% as.numeric
   if(NF < 202) {
-    colnames(df) <- c("ind", "X", paste("C", 1:(NF-2), sep = ""))
+    colnames(df) <- c("sample", "X", paste("C", 1:(NF-2), sep = ""))
     interval <- paste("C1:C", NF-2, sep = "")
     NF <- NF - 2
     } else {
-    colnames(df) <- c("ind", "X", paste("C", 1:200, sep = ""))
+    colnames(df) <- c("sample", "X", paste("C", 1:200, sep = ""))
     NF <- 200
     interval <- paste("C1:C", NF, sep = "")
   }
@@ -35,10 +35,10 @@
   eigenval <- read.table(file = fl, header = F)$V1
   individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
   people <- read.table(file = individuals.fl,
-                       col.names = c("ind", "pop", "super", "gender", "batch"),
-                       fill = T)
+                       col.names = c("sample", "pop", "super", "gender", "batch"),
+                       fill = T, header = T)
   people$batch <- factor(people$batch)
-  df <- merge(df, people, by = "ind")
+  df <- merge(df, people, by = "sample")
   
   components <- select_(df, interval)
   groups <- select_(df, paste("-(", interval, ")", sep = ""))
@@ -73,8 +73,8 @@ ggsave("../plots/batches.png")
 
 
 # temp <- filter(df, pop == "AthGene")
-# temp$ind <- factor(temp$ind %>% as.character, levels = athgene)
-# temp <- arrange(temp, ind)
+# temp$sample <- factor(temp$sample %>% as.character, levels = athgene)
+# temp <- arrange(temp, sample)
 # 
 # query <- select(temp, C1, C2, C3, C4) %>% as.matrix
 # ref <- select(filter(df, pop != "AthGene"), C1, C2, C3, C4) %>% as.matrix
@@ -117,11 +117,21 @@ ggplot(data = vals_df,
 #cumsum(eigenvals) / sum(eigenvals)
 
 genome.fl <- paste(data.dir, "maf0.05.genome", sep = "/")
-genome <- read.table(file = fl, header = T)
+
+genome <- read.table(file = genome.fl, header = T)
+
+genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
+group_by(genome, super) %>% summarise(count = n())
+filter(genome, PI_HAT > 0.1) %>% nrow
+genome %>% nrow
 
 #genome %>% filter(Z2 == 1) %>% View
-ggplot(data = filter(genome, PI_HAT > 0.2),
-       mapping = aes(x = Z1, y = Z2)) + geom_point() +
-  geom_text_repel(aes(label = paste(FID1, FID2))) +
+ggplot(data = genome,
+       mapping = aes(x = Z1, y = Z2, col = super, alpha = PI_HAT)) +
+  geom_point() +
   scale_x_continuous(limits = c(0, 1)) +
-  scale_y_continuous(limits = c(0, 1))
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = cbPalette) +
+  guides(alpha = FALSE)
+
+ggsave("../plots/IBD.png")

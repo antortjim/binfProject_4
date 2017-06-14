@@ -70,6 +70,9 @@ snps <- read.table(file = rs_code.fl, stringsAsFactors = F)[,1]
 # why do we have to do this? Because some of the snps in the excel are not used anymore
 tidy_data <- tidy_data[(tidy_data$`exm-number` %in% snps),]
 
+
+
+
 # remove snps without score annotation
 tidy_data <- tidy_data[!(is.na(tidy_data[["maj/maj"]]) |
                         is.na(tidy_data[["maj/min"]]) |
@@ -121,6 +124,11 @@ customer_alleles <- apply(X = the_subset, MARGIN = 1, FUN = function(x) na.omit(
 scores <- matrix(data = rep(0, nrow(tidy_data) * sample_size),
                  nrow = sample_size)
 colnames(scores) <- tidy_data[["exm-number"]]
+
+
+
+
+
 
 
 for(i in 1:nrow(tidy_data)) {

@@ -25,6 +25,8 @@
     interval <- paste("C1:C", NF, sep = "")
     }
   
+  fl <- paste(data.dir, "maf0.05.eigenval", sep = "/")
+  eigenval <- read.table(file = fl, header = F)$V1
   vals_df <- data.frame(value = eigenval, component = 1:NF)
   
   
@@ -36,8 +38,6 @@
   df$density <- dot_density
   #df$density <- 0.2
   
-  fl <- paste(data.dir, "maf0.05.eigenval", sep = "/")
-  eigenval <- read.table(file = fl, header = F)$V1
   individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
   people <- read.table(file = individuals.fl,
                        col.names = c("sample", "pop", "super", "gender", "batch"),
@@ -69,7 +69,8 @@
          y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""))
   
   
-ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
+
+  ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
 ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
 
 ggplot(data = filter(df, pop == "AthGene"),
@@ -116,12 +117,11 @@ ggplot(data = vals_df,
 
 ggplot(data = vals_df,
        mapping = aes(x = component, y = cumsum(value)/sum(value))) +
-  geom_line() +
+  geom_line() + geom_point(size = 0.5) +
   labs(x = "Component", y = "Cumulative variance")
 
 ggsave("../plots/cumulative_variance.png")
 
-#cumsum(eigenvals) / sum(eigenvals)
 
 genome.fl <- paste(data.dir, "maf0.05.genome", sep = "/")
 

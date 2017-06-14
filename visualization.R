@@ -115,9 +115,12 @@ ggplot(data = vals_df,
        mapping = aes(x = component, y = cumsum(value) / sum(value))) +
   geom_bar(stat = "identity", width = 1)
 
-ggplot(data = vals_df,
+ggplot(data = rbind(c(0, 0), vals_df),
        mapping = aes(x = component, y = cumsum(value)/sum(value))) +
-  geom_line() + geom_point(size = 0.5) +
+  geom_line() + geom_point(data = vals_df,
+                           size = 0.5) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_x_continuous(breaks = c(1, 50, 100, 150, 200)) +
   labs(x = "Component", y = "Cumulative variance")
 
 ggsave("../plots/cumulative_variance.png")

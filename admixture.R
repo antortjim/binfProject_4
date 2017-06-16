@@ -13,36 +13,32 @@ library("reshape2")
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
                "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
-
-
-athgene <- paste("I", 1:528, sep = "")
-
-
-panel <- read.table(file = "panel", header = T)
-panel <- rbind(panel,
-      data.frame(sample = athgene,
-                 pop = "AthGene",
-                 super_pop = "AthGene",
-                 gender = NA))
-
-
-individuals.fl <- "representative_subset"
-individuals <- read.table(file = individuals.fl,
-                          col.names = c("sample", "id")
-                          )
-
-individuals <- merge(individuals, select(panel, sample, super_pop),
-                     by = "sample") %>%
-  select(sample, super_pop)
+#athgene <- paste("I", 1:528, sep = "")
 
 
 super_pop_name <- c("AFR", "AMR", "AthGene", "EAS", "EUR", "SAS", "OTHER")
 super_pops <- c("AFR", "AMR", "EAS", "EUR", "SAS")
 
+sample.fl <- paste(data.dir, "representative_subset.fam", sep = "/")
+samples <- read.table(sample.fl,
+                      col.names = c("sample", "sample", "father", "mother", "gender", "phenotype"))
+
+panel <- read.table(file = "panel", header = T)
+athgene <- filter(samples, sample.1 == 1) %>% .$sample
+panel <- rbind(panel,
+               data.frame(sample = athgene,
+                          pop = "AthGene",
+                          super_pop = "AthGene",
+                          gender = NA))
 
 
-tbl <- read.table("representative_subset.5.Q")
-tbl <- cbind(individuals, tbl)
+myPanel <- full_join(samples, select(panel, sample, pop, super_pop), by = "sample") %>%
+  select(sample, pop, super_pop)
+
+
+
+tbl <- cbind(sample = samples$sample, read.table("representative_subset.5.Q"))
+tbl <- merge(tbl, myPanel, by = "sample")
 
 
 
@@ -53,7 +49,7 @@ mean_component <- ddply(tbl, .(super_pop), .fun = function(x) {
 component_names <- mean_component$super_pop[mean_component %>% select(-super_pop) %>%
                                               apply(MARGIN = 2, FUN = which.max) %>% unlist] %>%
   as.character
-colnames(tbl)[-(1:2)] <- component_names
+colnames(tbl)[colnames(tbl) %in% paste("V", 1:5, sep = "")] <- component_names
 
 
 plot_data <- melt(as.data.frame(mean_component), id.vars = "super_pop")
@@ -78,7 +74,7 @@ data <- tbl %>%
   arrange(EAS > 0.5, AMR > 0.5, AFR > 0.5, EUR > 0.5, SAS > 0.5)
 
 data_melt <- reshape2::melt(data,
-             id.vars = c("sample", "super_pop"), 
+             id.vars = c("sample", "super_pop", "pop"), 
              variable.name = "admixture") %>%
   arrange(sample, admixture)
 
@@ -88,7 +84,7 @@ ancestry <- ddply(.data = data_melt,
                   .fun = function(x) levels(data_melt$admixture)[which.max(x$value)])
 colnames(ancestry)[2] <- "admixture"
 
-ancestry <- merge(ancestry, select(tbl, sample, super_pop), by = "sample")
+ancestry <- merge(ancestry, select(tbl, sample, super_pop, pop), by = "sample")
 filter(ancestry, super_pop != "AthGene") %>% .[,2:3] %>%
   apply(MARGIN = 1, FUN = function(x) {x[1] == x[2]}) %>%
   table
@@ -136,6 +132,10 @@ p <- ggplot(data = data2,
                                              super_pop_name)]) +
   theme_void()
 
+
+ggsave(plot = p, filename = "../plots/admixture_plot.pdf",
+       width = 1000, height = 300, limitsize = F)
+
   #scale_y_continuous(expand = c(0, 0))
   
 # scaler <- 1000
@@ -175,8 +175,7 @@ p <- ggplot(data = data2,
 # }
 # 
 # q
-ggsave(plot = p, filename = "../plots/admixture_plot.pdf",
-       width = 1000, height = 300, limitsize = F)
+
 # 
 # for (i in 1:nrow(grob_data)) {
 # 
@@ -188,17 +187,8 @@ ggsave(plot = p, filename = "../plots/admixture_plot.pdf",
 
 
 
-  
-
-myIndividual <- "I2"
-myData <- filter(data_melt, sample == myIndividual, value > 0.05)
-myData <- rbind(myData,
-                data.frame(sample = myIndividual, super_pop = "AthGene",
-                           admixture = "OTHER", value = 1 - sum(myData$value)))
-
-
 # Waffle
-myIndividual <- "I525"
+myIndividual <- "I370"
 myData <- filter(data_melt, sample == myIndividual, value != 0)
 #myData <- rbind(data, data.frame(sample = myIndividual, super_pop = "OTHER", value = 1 - sum(myData$value)))
 

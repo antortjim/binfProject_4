@@ -26,10 +26,10 @@ plink --bfile maf0.05 --extract maf0.05.prune.in \
 
 grep -Fwvf <(tail -n +2 maf0.05.genome | awk '{print $3}' | sort | uniq) \
            <(tail -n +2 maf0.05.genome | awk '{print $1}' | sort | uniq) \
-           > maf0.05.remove.fam
+           | grep -v "^I[0-9]*$" > maf0.05.remove.fam
 
 #plink --make-bed --bfile sorted --maf 0.05 --geno 0.1 --remove-fam \
-    maf0.05.remove.fam --out maf0.05
+#    maf0.05.remove.fam --out maf0.05
 plink --make-bed --bfile sorted --maf 0.05 --remove-fam \
     maf0.05.remove.fam --out maf0.05
 

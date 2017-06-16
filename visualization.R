@@ -66,9 +66,24 @@
                                         name = "Population") +
     guides(alpha = F) +
     labs(x = paste("PC1 ", round(vals_df$value[1] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""),
-         y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""))
+         y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = "")) +
+    scale_alpha(range = c(.4, 0.75))
   
   
+  
+  # myIndividual <- "I370"
+  # 
+  # 
+  # ggplot(data = df,
+  #        mapping = aes(x = C1, y = C2,
+  #                      col = super, alpha = 1/density)) +
+  #   geom_point() +  scale_colour_manual(values = cbPalette,
+  #                                       name = "Population") +
+  #   guides(alpha = F) +
+  #   labs(x = paste("PC1 ", round(vals_df$value[1] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""),
+  #        y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = "")) +
+  #   geom_label(data = filter(df, sample == myIndividual),
+  #              mapping = aes(x = C1, y = C2, label = sample), show.legend = F)
 
   ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
 ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
@@ -131,7 +146,6 @@ genome.fl <- paste(data.dir, "maf0.05.genome", sep = "/")
 genome <- read.table(file = genome.fl, header = T)
 
 genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
-group_by(genome, super) %>% summarise(count = n())
 filter(genome, PI_HAT > 0.1) %>% nrow
 genome %>% nrow
 

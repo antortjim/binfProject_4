@@ -151,3 +151,5 @@ done
 
 paste athgene_individuals.txt iid father father father phenotype \
     > athgene.tfam
+
+rm iid father phenotype

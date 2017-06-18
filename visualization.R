@@ -50,27 +50,33 @@
   # p <- scatmat(data.frame(components[,1:5], groups), color = "super") +
   #   scale_colour_manual(values=cbPalette)
   # ggsave(p, dpi = 360, filename = "scatmat.png", height = 20, width = 30)
+
+df_plotted <- filter(df, pop %in%  c("ITU", "ACB", "CEU", "PEL", "AthGene", "CHS"))
   
-  df$density <- fields::interp.surface(
-    MASS::kde2d(df$C1, df$C2), df[,c("C1", "C2")])
+  df_plotted$density <- fields::interp.surface(
+    MASS::kde2d(df_plotted$C1, df_plotted$C2), df_plotted[,c("C1", "C2")])
   
-  df[df$super == "AthGene", "density"] <- 1
+  df_plotted[df_plotted$super == "AthGene", "density"] <- 1
   
   
   #ggplot(data = filter(df, pop %in% c("CEU", "PEL", "CHB", "AthGene", "ITU", "ACB")),
   #df$alpha <- ifelse(df$super == "AthGene", 0.8, 0.2)
-  ggplot(data = df,
+pca <- ggplot(data = df_plotted,
          mapping = aes(x = C1, y = C2,
                        col = super, alpha = 1/density)) +
-    geom_point() +  scale_colour_manual(values = cbPalette,
-                                        name = "Population") +
-    guides(alpha = F) +
+    geom_point(size = .5) +
+  theme(text = element_text(size = 20),
+        legend.position = "top") +
+  scale_colour_manual(values = cbPalette) +
+    guides(alpha = F, col = guide_legend(nrow = 1, title = "Population")) +
     labs(x = paste("PC1 ", round(vals_df$value[1] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""),
          y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = "")) +
-    scale_alpha(range = c(.4, 0.75))
-  
-  
-  
+    scale_alpha(range = c(.4, 1)) +
+  scale_x_continuous(breaks = seq(-0.02, 0.04, 0.02)) +
+  scale_y_continuous(breaks = seq(-0.02, 0.04, 0.02))
+pca
+ggsave(plot = pca, "../plots/c1c2.png",
+       width = 10, height = 10, dpi = 288) 
   # myIndividual <- "I370"
   # 
   # 
@@ -85,12 +91,20 @@
   #   geom_label(data = filter(df, sample == myIndividual),
   #              mapping = aes(x = C1, y = C2, label = sample), show.legend = F)
 
-  ggsave("../plots/c1c2.png", limitsize = F, dpi = 720)
+
+
 ggsave("../plots/c1c2.svg", limitsize = F, dpi = 720)
 
-ggplot(data = filter(df, pop == "AthGene"),
+df_plotted$density <- fields::interp.surface(
+  MASS::kde2d(df_plotted$C1, df_plotted$C2), df_plotted[,c("C1", "C2")])
+
+
+ggplot(data = filter(df_plotted, pop == "AthGene", C2 < 0.02 | batch != 8),
        mapping = aes(x = C1, y = C2, col = batch)) +
-  geom_text(mapping = aes(label = batch), size = 3, show.legend = F)
+  geom_text(mapping = aes(label = batch), size = 7, show.legend = F) +
+  geom_text_repel(data = filter(df_plotted, pop == "AthGene", C2 > 0.02 & batch == 8),
+                  aes(label = batch), size = 7, show.legend = F) +
+  scale_alpha(range = c(0.25, 1))
 
 ggsave("../plots/batches.png")
 
@@ -139,24 +153,3 @@ ggplot(data = rbind(c(0, 0), vals_df),
   labs(x = "Component", y = "Cumulative variance")
 
 ggsave("../plots/cumulative_variance.png")
-
-
-genome.fl <- paste(data.dir, "maf0.05.genome", sep = "/")
-
-genome <- read.table(file = genome.fl, header = T)
-
-genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
-filter(genome, PI_HAT > 0.1) %>% nrow
-genome %>% nrow
-
-
-#genome %>% filter(Z2 == 1) %>% View
-ggplot(data = genome,
-       mapping = aes(x = Z1, y = Z2, col = super, alpha = PI_HAT)) +
-  geom_point() +
-  scale_x_continuous(limits = c(0, 1)) +
-  scale_y_continuous(limits = c(0, 1)) +
-  scale_color_manual(values = cbPalette) +
-  guides(alpha = FALSE)
-
-ggsave("../plots/IBD.png")

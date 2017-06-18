@@ -1,0 +1,49 @@
+---
+title: "Relatedness"
+author: "Antonio Ortega Jiménez"
+date: "June 17, 2017"
+output: html_document
+runtime: shiny
+---
+  
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = F, include = T, message = F, warning = F)
+```
+
+```{r}
+library("ggvis")
+library("ggplot2")
+library("dplyr")
+data.dir <- "~/MEGA/AthGene/data"
+
+individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
+people <- read.table(file = individuals.fl,
+                     col.names = c("sample", "pop", "super", "gender", "batch"),
+                     fill = T, header = T)
+people$batch <- factor(people$batch)
+#
+genome.fl <- paste(data.dir, "athgene_relatives.genome", sep = "/")
+
+genome <- read.table(file = genome.fl, header = T, stringsAsFactors = F)
+
+genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
+
+
+visual_data <- filter(genome, PI_HAT > 0.1)
+
+visual_data$pair <- 
+  paste(gsub(pattern = "(I)([0-9]*)", "\\2", x = visual_data$FID1),
+        "+",
+        gsub(pattern = "(I)([0-9]*)", x = visual_data$FID2, "\\2"),
+        sep = "")
+
+    ggvis(data = visual_data, 
+        ~Z1, ~Z2,
+        opacity:= ~PI_HAT,
+        key:= ~pair
+  ) %>%
+    layer_points() %>%
+    add_tooltip(html = function(data) paste("Customers: ", data$pair),
+                on = "hover")
+```
+

@@ -135,6 +135,8 @@ p <- ggplot(data = data2,
 
 ggsave(plot = p, filename = "../plots/admixture_plot.pdf",
        width = 1000, height = 300, limitsize = F)
+ggsave(plot = p, filename = "../plots/admixture_plot.png",
+       width = 100, height = 30, limitsize = F, dpi = 72)
 
   #scale_y_continuous(expand = c(0, 0))
   
@@ -188,16 +190,26 @@ ggsave(plot = p, filename = "../plots/admixture_plot.pdf",
 
 
 # Waffle
-myIndividual <- "I370"
-myData <- filter(data_melt, sample == myIndividual, value != 0)
-#myData <- rbind(data, data.frame(sample = myIndividual, super_pop = "OTHER", value = 1 - sum(myData$value)))
+myIndividuals <- c("I370", "I400", "I5", "I110", "I215")
+myPops <- c("EAS", "AMR", "EUR", "AFR", "SAS")
+for (i in 1:length(myIndividuals)) {
+  myIndividual <- myIndividuals[i]
+  
+  myData <- filter(data_melt, sample == myIndividual, value != 0)
+  #myData <- rbind(data, data.frame(sample = myIndividual, super_pop = "OTHER", value = 1 - sum(myData$value)))
+  
+  myData$value <- round(myData$value * 100, digits = 0)
+  myData <- select(myData, name = admixture, vals = value)
+  myData$name <- myData$name %>% as.character %>% as.factor
+  #myData <- filter(myData, vals > 0)
+  
+  waffle(parts = myData, rows = 20, equal = F,
+         colors = cbPalette[match(myData$name, super_pop_name)],
+         legend_pos = "none") +
+    theme(plot.title = element_text(size = 60, face = "bold")) +
+    #ggtitle(paste(myIndividual, "(", myPops[i], ")", sep = ""))
+    ggtitle(myIndividual)
+  fl <- paste("../plots/", myPops[i], ".png", sep = "")
+  ggsave(fl)
+}
 
-myData$value <- round(myData$value * 100, digits = 0)
-myData <- select(myData, name = admixture, vals = value)
-myData$name <- myData$name %>% as.character %>% as.factor
-#myData <- filter(myData, vals > 0)
-
-waffle(parts = myData, rows = 10,
-       colors = cbPalette[match(myData$name, super_pop_name)]) +
-  ggtitle(myIndividual)
-ggsave("waffle.png")

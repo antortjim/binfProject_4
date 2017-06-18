@@ -1,0 +1,10 @@
+name: vo2max
+title: VO2max
+account: antortjim
+server: shinyapps.io
+appId: 190085
+bundleId: 871560
+url: https://antortjim.shinyapps.io/vo2max/
+when: 1497741453.02245
+asMultiple: FALSE
+asStatic: FALSE

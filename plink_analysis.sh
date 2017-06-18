@@ -22,7 +22,7 @@ plink --bfile maf0.05 --indep 50 5 2 --out maf0.05
 
 ## Analyze Identity By Descent individual wise
 plink --bfile maf0.05 --extract maf0.05.prune.in \
-    --genome --min 0.1 --out maf0.05
+    --genome --out maf0.05
 
 grep -Fwvf <(tail -n +2 maf0.05.genome | awk '{print $3}' | sort | uniq) \
            <(tail -n +2 maf0.05.genome | awk '{print $1}' | sort | uniq) \
@@ -47,4 +47,6 @@ plink --bfile maf0.05 --extract maf0.05.prune.in --freq --out maf0.05
 ## Output heterozygosity statistics
 plink --bfile maf0.05 --extract maf0.05.prune.in --het --out maf0.05
 
-
+plink --bfile maf0.05 --extract maf0.05.prune.in \
+    --keep <(awk '$2 == 1 {print $1, $2}' maf0.05.fam) \
+    --genome --out athgene_relatives

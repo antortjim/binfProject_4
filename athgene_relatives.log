@@ -1,0 +1,18 @@
+PLINK v1.90b3.29 64-bit (24 Dec 2015)
+Options in effect:
+  --bfile maf0.05
+  --extract maf0.05.prune.in
+  --genome
+  --keep /dev/fd/63
+  --min 0.1
+  --out athgene_relatives
+
+Hostname: thegrid
+Working directory: /home/antortjim/MEGA/AthGene/code
+Start time: Sat Jun 17 17:40:41 2017
+
+Random number seed: 1497714041
+11913 MB RAM detected; reserving 5956 MB for main workspace.
+Error: Failed to open maf0.05.bed.
+
+End time: Sat Jun 17 17:40:41 2017

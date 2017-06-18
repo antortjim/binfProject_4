@@ -1,0 +1,100 @@
+---
+title: "Relatedness"
+author: "Antonio Ortega Jiménez"
+date: "June 17, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library("ggvis")
+library("ggplot2")
+library("dplyr")
+library("shiny")
+data.dir <- "~/MEGA/AthGene/data"
+setwd(data.dir)
+cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")
+people <- read.table(file = individuals.fl,
+                     col.names = c("sample", "pop", "super", "gender", "batch"),
+                     fill = T, header = T)
+people$batch <- factor(people$batch)
+#
+
+genome.fl <- paste(data.dir, "maf0.05.genome", sep = "/")
+
+genome <- read.table(file = genome.fl, header = T)
+
+genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
+filter(genome, PI_HAT > 0.1) %>% nrow
+genome %>% nrow
+
+
+#genome %>% filter(Z2 == 1) %>% View
+ggplot(data = genome,
+       mapping = aes(x = Z1, y = Z2, col = super, alpha = PI_HAT)) +
+  geom_point() +
+  scale_x_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = cbPalette) +
+  guides(alpha = FALSE)
+
+ggsave("../plots/IBD.png")
+
+#
+genome.fl <- paste(data.dir, "athgene_relatives.genome", sep = "/")
+
+genome <- read.table(file = genome.fl, header = T, stringsAsFactors = F)
+
+genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
+filter(genome, PI_HAT > 0.1) %>% nrow
+genome %>% nrow
+
+#
+#genome %>% filter(Z2 == 1) %>% View
+visual_data <- filter(genome, PI_HAT > 0)
+
+
+
+
+
+ggplot(data = filter(genome, PI_HAT > 0),
+       mapping = aes(x = Z1, y = Z2, alpha = PI_HAT)) +
+  geom_point(show.legend = F) +
+  scale_x_continuous(limits = c(0, 1)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  scale_color_manual(values = cbPalette) +
+  guides(alpha = FALSE)
+
+ggsave("../plots/IBD.png")
+
+
+
+#
+genome.fl <- paste(data.dir, "athgene_relatives.genome", sep = "/")
+
+genome <- read.table(file = genome.fl, header = T, stringsAsFactors = F)
+
+genome <- merge(genome, select(people, FID1 = sample, super), by = "FID1")
+
+
+visual_data <- filter(genome, PI_HAT > 0.1)
+visual_data$pair <- 
+  paste(gsub(pattern = "(I)([0-9]*)", "\\2", x = visual_data$FID1),
+        "+",
+        gsub(pattern = "(I)([0-9]*)", x = visual_data$FID2, "\\2"),
+        sep = "")
+
+
+ggvis(data = visual_data, 
+      ~Z1, ~Z2,
+      opacity:= ~PI_HAT,
+      key:= ~pair
+) %>%
+  layer_points() %>%
+  add_tooltip(html = function(data) paste("Customers: ", data$pair),
+              on = "hover")

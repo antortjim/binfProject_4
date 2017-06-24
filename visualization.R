@@ -5,7 +5,7 @@
   library("dplyr")
   library("GGally")
   #data.dir <- commandArgs(trailingOnly = T)
-  data.dir <- "~/MEGA/AthGene/data"
+  data.dir <- "~/AthGene/data"
   setwd(data.dir)
   cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
   athgene <- paste("I", 1:528, sep = "")
@@ -64,7 +64,7 @@ df_plotted <- filter(df, pop %in%  c("ITU", "ACB", "CEU", "PEL", "AthGene", "CHS
 pca <- ggplot(data = df_plotted,
          mapping = aes(x = C1, y = C2,
                        col = super, alpha = 1/density)) +
-    geom_point(size = .5) +
+    geom_point() +
   theme(text = element_text(size = 20),
         legend.position = "top") +
   scale_colour_manual(values = cbPalette) +
@@ -76,7 +76,7 @@ pca <- ggplot(data = df_plotted,
   scale_y_continuous(breaks = seq(-0.02, 0.04, 0.02))
 pca
 ggsave(plot = pca, "../plots/c1c2.png",
-       width = 10, height = 10, dpi = 288) 
+       width = 20, height = 10, dpi = 288) 
   # myIndividual <- "I370"
   # 
   # 
@@ -106,7 +106,8 @@ ggplot(data = filter(df_plotted, pop == "AthGene", C2 < 0.02 | batch != 8),
                   aes(label = batch), size = 7, show.legend = F) +
   scale_alpha(range = c(0.25, 1))
 
-ggsave("../plots/batches.png")
+ggsave("../plots/batches.png",
+       height = 5, width = 5)
 
 
 # temp <- filter(df, pop == "AthGene")
@@ -152,4 +153,4 @@ ggplot(data = rbind(c(0, 0), vals_df),
   scale_x_continuous(breaks = c(1, 50, 100, 150, 200)) +
   labs(x = "Component", y = "Cumulative variance")
 
-ggsave("../plots/cumulative_variance.png")
+ggsave("../plots/cumulative_variance.png", height = 5, width = 10)

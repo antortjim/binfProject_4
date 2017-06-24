@@ -1,5 +1,5 @@
 #data.dir <- commandArgs(trailingOnly = T)[[1]]
-data.dir <- "~/MEGA/AthGene/data"
+data.dir <- "~/AthGene/data"
 setwd(data.dir)
 
 library("shiny")

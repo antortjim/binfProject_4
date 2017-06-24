@@ -14,7 +14,7 @@ library("ggvis")
 library("ggplot2")
 library("dplyr")
 library("shiny")
-data.dir <- "~/MEGA/AthGene/data"
+data.dir <- "~/AthGene/data"
 setwd(data.dir)
 
 individuals.fl <- paste(data.dir, "individuals_athgene.txt", sep = "/")

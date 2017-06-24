@@ -1,5 +1,5 @@
 #data.dir <- commandArgs(trailingOnly = T)[[1]]
-data.dir <- "~/MEGA/AthGene/data"
+data.dir <- "~/MEGA/data"
 setwd(data.dir)
 
 library("waffle")

@@ -3,9 +3,8 @@ title: Ethnicity
 account: antortjim
 server: shinyapps.io
 appId: 190042
-bundleId: 871395
+bundleId: 878346
 url: https://antortjim.shinyapps.io/ethnicity/
-when: 1497726451.65607
+when: 1498143172.34214
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: main_two.eigenval

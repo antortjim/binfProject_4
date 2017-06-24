@@ -2,7 +2,7 @@ library("ggvis")
 library("ggplot2")
 theme_set(theme_bw())
 library("dplyr")
-data.dir <- "~/MEGA/AthGene/data"
+data.dir <- "~/AthGene/data"
 setwd(data.dir)
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
@@ -60,7 +60,8 @@ pi_hat <- ggplot(data = filter(genome, PI_HAT > 0),
   xlab(expression(hat(pi))) +
   theme(legend.position = "top", text = element_text(size = 20))
 
-ggsave(filename = "../plots/pi_hat.png", pi_hat)
+ggsave(filename = "../plots/pi_hat.png", plot = pi_hat,
+       height = 5, width = 12)
 
 # ggplot(data = genome,
 #        mapping = aes(x = super, y = PI_HAT, fill = super)) +
@@ -106,7 +107,7 @@ visual_data <- filter(genome, PI_HAT > 0)
 
 
 
-ggplot(data = genome,
+relatives <- ggplot(data = genome,
        mapping = aes(x = Z1, y = Z2, alpha = PI_HAT)) +
   geom_point(show.legend = F) +
   scale_x_continuous(limits = c(0, 1)) +
@@ -115,9 +116,11 @@ ggplot(data = genome,
   annotate("label", x = c(0.1, .95, 0.5, 0.45, 0.25, 0.05),
            y = c(0.95, 0.10, .3, .05, 0.05, 0.05),
            label = c("MZ / Dup", "PO", "FS", "HS", "C1", "U"),
-           col = RColorBrewer::brewer.pal(n = 6, name = "Set1"))
+           col = RColorBrewer::brewer.pal(n = 6, name = "Set1")) +
+  theme(text = element_text(size = 20))
 
-ggsave("../plots/relatedness.png")
+ggsave(filename = "../plots/relatedness.png", plot = relatives,
+       height = 5, width = 10)
 
 
 

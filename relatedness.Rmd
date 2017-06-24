@@ -14,7 +14,7 @@ library("ggvis")
 library("ggplot2")
 library("dplyr")
 library("shiny")
-data.dir <- "~/MEGA/AthGene/data"
+data.dir <- "~/AthGene/data"
 setwd(data.dir)
 cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 

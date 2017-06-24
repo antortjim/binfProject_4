@@ -1,5 +1,5 @@
 #! /bin/bash
-export DATA_FOLDER="/home/antortjim/MEGA/AthGene/data"
+export DATA_FOLDER="/home/antortjim/AthGene/data"
 export GTREPORT=$DATA_FOLDER/data.csv
 export DATA=$DATA_FOLDER/data.tsv
 export MARKER_IDS=$DATA_FOLDER/marker_ids

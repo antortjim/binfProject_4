@@ -1,4 +1,4 @@
-data.dir  <- "~/MEGA/AthGene/data"
+data.dir  <- "~/AthGene/data"
 #data.dir <- commandArgs(trailingOnly = T)[[1]]
 setwd(data.dir)
 library("readxl")
@@ -111,6 +111,7 @@ tidy_data <- tidy_data[!duplicated(tidy_data[["exm-number"]]),]
 tidy_data <- tidy_data[tidy_data[["exm-number"]] %in% markers,]
 the_subset <- the_subset[markers %in% tidy_data[["exm-number"]],]
 markers <- markers[markers %in% tidy_data[["exm-number"]]]
+rownames(the_subset) <- markers
 
 # Order data frame with same order as in the snps data file
 # tidy_data <- tidy_data[match(tidy_data[["exm-number"]], rownames(the_subset)),]

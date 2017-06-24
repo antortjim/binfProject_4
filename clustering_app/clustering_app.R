@@ -80,7 +80,7 @@ plot_pca <- function(input, df_plotted, vals_df) {
     theme(text = element_text(size = 20),
           legend.position = "top") +
     scale_colour_manual(values = cbPalette) +
-    guides(alpha = F, col = guide_legend(nrow = 1, title = "Population")) +
+    guides(alpha = F, col = guide_legend(nrow = 1, title = "Population", override.aes = list(size = 10))) +
     labs(x = paste("PC1 ", round(vals_df$value[1] / sum(vals_df$value), digits = 2) * 100, "% var", sep = ""),
          y = paste("PC2 ", round(vals_df$value[2] / sum(vals_df$value), digits = 2) * 100, "% var", sep = "")) +
     scale_alpha(range = c(.4, 0.75)) +
@@ -104,25 +104,20 @@ filter_data <- function(input) {
 }
 
 
-
-
 ui <- fluidPage(
   titlePanel("Admixture vs. Principal Component Analysis"),
-  
   fluidRow(
-    splitLayout(cellWidths = c("30%", "40%"),
-                plotOutput("plot1"),
-                plotOutput("plot2"))
-  ),
-  
-    wellPanel(
-    textInput(inputId = "myIndividual",
-              label = "Select an individual",
-              value = "I1"),
-    helpText("Enter individual id from I1 to I528.\n I370 is an East Asian example.")
+    column(4,
+           textInput(inputId = "myIndividual",
+                     label = "Select an individual",
+                     value = "I1"),
+           helpText("Enter individual id from I1 to I528.\n I370 is an East Asian example."), # end of sideBar
+           plotOutput("plot1")),
+    column(8, plotOutput("plot2", height = 740, width = 740))
     )
 )
 
+    
 server <- function(input, output) {
   
     cbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73",
